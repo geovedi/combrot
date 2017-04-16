@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 import io
 import pickle
 import fire
+import kenlm
 import numpy as np
 import networkx as nx
 from collections import Counter
@@ -112,7 +113,9 @@ def handle_tokens(tokens):
     yield ('</s>', 0)
 
 
-def main(corpus, hyp_num=1000):
+def main(lm_model, corpus, hyp_num=1000):
+    model = kenlm.Model(lm_model)
+
     for i, line in enumerate(io.open(corpus, 'r', encoding='utf-8')):
         sent_pairs = line.strip().split(' ||| ')
         targets = merge_subseq([tok.split() for tok in sent_pairs[1:]])
@@ -121,14 +124,14 @@ def main(corpus, hyp_num=1000):
         for tokens in targets:
             G = add_edges(G, handle_tokens(tokens))
 
-        for j, p in enumerate(sorted(
-                nx.all_simple_paths(G, ('<s>', 0), ('</s>', 0)),
-                key=lambda path: path_cost(G, path, weight='weight'))):
-            if j >= hyp_num:
-                break
+        candidates = Counter()
+        for p in sorted(nx.all_simple_paths(G, ('<s>', 0), ('</s>', 0))):
             target_tokens = [t[0] for t in p[1:-1]]
-            target_text = ' '.join(target_tokens)
-            print('{0} ||| {1}'.format(i, target_text))
+            text = ' '.join(target_tokens)
+            candidates[text] = model.score(text, bos=True, eos=True)
+
+        for text, score in candidates.most_common(hyp_num):
+            print('{0} ||| {1} ||| KenLM={2}'.format(i, text, score))
 
 
 if __name__ == '__main__':

@@ -138,13 +138,12 @@ def main(ft_src, ft_tgt, tm_model, corpus, hyp_num=1000):
                 key=lambda path: path_cost(G, path, weight='weight')):
             target_tokens = [t[0] for t in p[1:-1]]
             target_tokens = ' '.join(target_tokens).split()  # hack
+            text = ' '.join(target_tokens)
             target_vec = unitvec(get_vec(ft_tgt_model, target_tokens))
-            sim = np.dot(source_vec_proj, target_vec)
-            target_text = ' '.join(target_tokens)
-            candidates[target_text] = sim
+            candidates[text] = np.dot(source_vec_proj, target_vec)
 
-        for target_text, sim in candidates.most_common(hyp_num):
-            print('{0} ||| {1} ||| Cosine={2}'.format(i, target_text, sim))
+        for text, score in candidates.most_common(hyp_num):
+            print('{0} ||| {1} ||| Cosine={2}'.format(i, text, score))
 
 
 if __name__ == '__main__':

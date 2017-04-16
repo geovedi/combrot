@@ -1,6 +1,7 @@
 # combrot
 Expand, combine, evaluate multiple machine translation systems output
 
+## Neural
 
 ### Build word representations
 
@@ -26,3 +27,13 @@ The models can be built from monolingual corpuses.
     lamtram --operation nbest --src_in output.sim.txt ... > output.ll.txt
     paste output.sim.txt output.ll.txt | perl -pe 's/\t/ /g' > output.score.txt
 
+## Statistical
+
+### Build LM
+
+    lmplz -o 5 < corpus.tok.tgt > klm_o5.arpa
+    build_binary klm_o5.arpa klm_o5.bin
+
+### LM scoring
+
+    python combrot_lm.py klm_o5.bin combined.txt > output.lm.score
