@@ -128,10 +128,10 @@ def main(lm_model, corpus, hyp_num=1000):
         for p in sorted(nx.all_simple_paths(G, ('<s>', 0), ('</s>', 0))):
             target_tokens = [t[0] for t in p[1:-1]]
             text = ' '.join(target_tokens)
-            candidates[text] = model.score(text, bos=True, eos=True)
+            candidates[text] = -model.perplexity(text, bos=True, eos=True)
 
-        for text, score in candidates.most_common(hyp_num):
-            print('{0} ||| {1} ||| KenLM={2}'.format(i, text, score))
+        for text, ppl in candidates.most_common(hyp_num):
+            print('{0} ||| {1} ||| KenLM={2}'.format(i, text, -ppl))
 
 
 if __name__ == '__main__':
