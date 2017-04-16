@@ -8,7 +8,6 @@ import fire
 import numpy as np
 from sklearn.linear_model import LinearRegression
 from gensim.models.wrappers import FastText
-from gensim.matutils import unitvec
 
 import logging
 logging.basicConfig(
@@ -52,4 +51,3 @@ def main(ft_src, ft_tgt, corpus_src, corpus_tgt, out_fname):
 
 if __name__ == '__main__':
     fire.Fire(main)
-

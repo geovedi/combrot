@@ -17,3 +17,7 @@ The models can be built from monolingual corpuses.
 
     perl paste-files.pl source.txt output_system_1.txt output_system_2.txt ... > combined.txt
 
+### Similarity scoring
+
+    python combrot_sim.py model.src model.tgt tm_model.pickle combined.txt > output.sim.txt
+
