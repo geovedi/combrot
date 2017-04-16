@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 import io
 import pickle
 import fire
+import numpy as np
 import networkx as nx
 from collections import Counter
 from sklearn.linear_model import LinearRegression
