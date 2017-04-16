@@ -8,9 +8,6 @@ import fire
 import numpy as np
 import networkx as nx
 from collections import Counter
-from sklearn.linear_model import LinearRegression
-from gensim.models.wrappers import FastText
-from gensim.matutils import unitvec
 
 import logging
 logging.basicConfig(
@@ -115,36 +112,23 @@ def handle_tokens(tokens):
     yield ('</s>', 0)
 
 
-def main(ft_src, ft_tgt, tm_model, corpus, hyp_num=1000):
-    ft_src_model = FastText.load_fasttext_format(ft_src)
-    ft_tgt_model = FastText.load_fasttext_format(ft_tgt)
-    tm = pickle.load(open(tm_model, 'rb'))
-
+def main(corpus, hyp_num=1000):
     for i, line in enumerate(io.open(corpus, 'r', encoding='utf-8')):
         sent_pairs = line.strip().split(' ||| ')
-        source = sent_pairs[0]
         targets = merge_subseq([tok.split() for tok in sent_pairs[1:]])
 
         G = nx.DiGraph()
         for tokens in targets:
             G = add_edges(G, handle_tokens(tokens))
 
-        source_vec = get_vec(ft_src_model, source)
-        source_vec_proj = tm.predict(source_vec.reshape(1, -1))[0]
-        source_vec_proj = unitvec(source_vec_proj)
-        candidates = Counter()
-        for p in sorted(
+        for j, p in enumerate(sorted(
                 nx.all_simple_paths(G, ('<s>', 0), ('</s>', 0)),
-                key=lambda path: path_cost(G, path, weight='weight')):
+                key=lambda path: path_cost(G, path, weight='weight'))):
+            if j >= hyp_num:
+                break
             target_tokens = [t[0] for t in p[1:-1]]
-            target_tokens = ' '.join(target_tokens).split()  # hack
-            target_vec = unitvec(get_vec(ft_tgt_model, target_tokens))
-            sim = np.dot(source_vec_proj, target_vec)
             target_text = ' '.join(target_tokens)
-            candidates[target_text] = sim
-
-        for target_text, sim in candidates.most_common(hyp_num):
-            print('{0} ||| {1} ||| Cosine={2}'.format(i, target_text, sim))
+            print('{0} ||| {1}'.format(i, target_text))
 
 
 if __name__ == '__main__':
