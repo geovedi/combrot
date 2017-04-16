@@ -15,7 +15,7 @@ The models can be built from monolingual corpuses.
 
 ### Preparing input data
 
-    perl paste-files.pl source.txt output_system_1.txt output_system_2.txt ... > combined.txt
+    paste source.txt output_system_1.txt output_system_2.txt ... | perl -pe 's/\t/ ||| /g' > combined.txt
 
 ### Similarity scoring
 
