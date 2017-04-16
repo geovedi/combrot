@@ -72,8 +72,8 @@ def main(ft_src, ft_tgt, tm_model, corpus, hyp_num=100):
             target_text = ' '.join(target_tokens)
             candidates[target_text] = sim
 
-        for text, sim in candidates.most_common(hyp_num):
-            print('{0} ||| {1} ||| Cosine={}'.format(i, text, sim))
+        for target_text, sim in candidates.most_common(hyp_num):
+            print('{0} ||| {1} ||| Cosine={2}'.format(i, target_text, sim))
 
 
 if __name__ == '__main__':
