@@ -21,7 +21,7 @@ def get_vec(model, fname):
     vec = []
     for line in io.open(fname, 'r', encoding='utf-8'):
         tokens = line.strip().split()
-        X = np.zeros((len(tokens), model.size))
+        X = np.zeros((len(tokens), model.wv.vector_size))
         for i, tok in enumerate(tokens):
             X[i] = model.wv.word_vec(tok)
         vec.append(X.mean(axis=0))
