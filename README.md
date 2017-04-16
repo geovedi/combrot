@@ -21,3 +21,8 @@ The models can be built from monolingual corpuses.
 
     python combrot_sim.py model.src model.tgt tm_model.pickle combined.txt > output.sim.txt
 
+### LM scoring
+
+    lamtram --operation nbest --src_in output.sim.txt ... > output.ll.txt
+    paste output.sim.txt output.ll.txt | perl -pe 's/\t/ /g' > output.score.txt
+
