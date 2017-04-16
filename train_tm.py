@@ -17,14 +17,20 @@ logging.basicConfig(
     level=logging.INFO)
 
 
-def get_vec(model, fname):
-    vec = []
-    for line in io.open(fname, 'r', encoding='utf-8'):
+def line_count(fname):
+    for i, line in enumerate(io.open(fname, 'r', encoding='utf-8')):
+        pass
+    return i + 1
+
+
+def get_vec(model, dim, fname):
+    vec = np.zeros((line_count(fname), dim))
+    for i, line in enumerate(io.open(fname, 'r', encoding='utf-8')):
         tokens = line.strip().split()
-        X = np.zeros((len(tokens), model.wv.vector_size))
+        X = np.zeros((len(tokens), dim))
         for i, tok in enumerate(tokens):
             X[i] = model.wv.word_vec(tok)
-        vec.append(X.mean(axis=0))
+        vec[i] = X.mean(axis=0)
     return np.asarray(vec)
 
 
@@ -32,8 +38,9 @@ def main(ft_src, ft_tgt, corpus_src, corpus_tgt, out_fname):
     ft_src_model = FastText.load_fasttext_format(ft_src)
     ft_tgt_model = FastText.load_fasttext_format(ft_tgt)
 
-    X = get_vec(ft_src_model, corpus_src)
-    y = get_vec(ft_tgt_model, corpus_tgt)
+    X = get_vec(ft_src_model, model.wv.vector_size, corpus_src)
+    y = get_vec(ft_tgt_model, model.wv.vector_size, corpus_tgt)
+    assert X.shape == y.shape, 'mismatched shapes'
 
     lr = LinearRegression()
     lr.fit(X, y)
