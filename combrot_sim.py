@@ -38,20 +38,6 @@ def add_edges(G, tokens):
     return G
 
 
-def path_cost(G, path, weight='weight'):
-    cost = 0
-    for i in range(len(path)):
-        if i > 0:
-            if weight != None:
-                edge = (path[i - 1], path[i])
-                cost += G.get_edge_data(*edge)[weight]
-            else:
-                cost += 1
-    if cost == 0:
-        return 0
-    return cost / len(path)
-
-
 def get_vec(model, tokens):
     dim = model.wv.vector_size
     X = np.zeros((len(tokens), dim))
@@ -60,7 +46,7 @@ def get_vec(model, tokens):
     return X.mean(axis=0)
 
 
-def main(ft_src, ft_tgt, tm_model, corpus):
+def main(ft_src, ft_tgt, tm_model, corpus, hyp_num=100):
     ft_src_model = FastText.load_fasttext_format(ft_src)
     ft_tgt_model = FastText.load_fasttext_format(ft_tgt)
     tm = pickle.load(open(tm_model, 'rb'))
@@ -78,16 +64,14 @@ def main(ft_src, ft_tgt, tm_model, corpus):
         source_vec_proj = tm.predict(source_vec.reshape(1, -1))[0]
         source_vec_proj = unitvec(source_vec_proj)
         candidates = Counter()
-        for p in sorted(
-                nx.all_simple_paths(G, ('<s>', 0), ('</s>', 0)),
-                key=lambda path: path_cost(G, path, weight='weight')):
+        for p in nx.all_simple_paths(G, ('<s>', 0), ('</s>', 0)):
             target_tokens = [t[0] for t in p[1:-1]]
             target_vec = unitvec(get_vec(ft_tgt_model, target_tokens))
             sim = np.dot(source_vec_proj, target_vec)
             target_text = ' '.join(target_tokens)
             candidates[target_text] = sim
 
-        for text, sim in candidates.most_common(10):
+        for text, sim in candidates.most_common(hyp_num):
             print('{0} ||| {1} ||| Cosine={}'.format(i, text, sim))
 
 
