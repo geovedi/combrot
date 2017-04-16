@@ -23,7 +23,8 @@ def line_count(fname):
     return i + 1
 
 
-def get_vec(model, dim, fname):
+def get_vec(model, fname):
+    dim = model.wv.vector_size
     vec = np.zeros((line_count(fname), dim))
     for i, line in enumerate(io.open(fname, 'r', encoding='utf-8')):
         tokens = line.strip().split()
@@ -38,8 +39,8 @@ def main(ft_src, ft_tgt, corpus_src, corpus_tgt, out_fname):
     ft_src_model = FastText.load_fasttext_format(ft_src)
     ft_tgt_model = FastText.load_fasttext_format(ft_tgt)
 
-    X = get_vec(ft_src_model, model.wv.vector_size, corpus_src)
-    y = get_vec(ft_tgt_model, model.wv.vector_size, corpus_tgt)
+    X = get_vec(ft_src_model, corpus_src)
+    y = get_vec(ft_tgt_model, corpus_tgt)
     assert X.shape == y.shape, 'mismatched shapes'
 
     lr = LinearRegression()
