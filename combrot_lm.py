@@ -3,12 +3,12 @@
 from __future__ import unicode_literals
 
 import io
-import pickle
 import fire
 import kenlm
 import numpy as np
 import networkx as nx
 from collections import Counter
+from itertools import permutations
 
 import logging
 logging.basicConfig(
@@ -118,21 +118,26 @@ def main(lm_model, corpus, hyp_num=1000):
 
     for i, line in enumerate(io.open(corpus, 'r', encoding='utf-8')):
         sent_pairs = line.strip().split(' ||| ')
-        targets = merge_subseq([tok.split() for tok in sent_pairs[1:]])
-
-        G = nx.DiGraph()
-        for tokens in targets:
-            G = add_edges(G, handle_tokens(tokens))
-
+        targets = set(sent_pairs[1:])
         candidates = Counter()
-        for p in sorted(nx.all_simple_paths(G, ('<s>', 0), ('</s>', 0))):
-            target_tokens = [t[0] for t in p[1:-1]]
-            text = ' '.join(target_tokens)
-            candidates[text] = -model.perplexity(text, bos=True, eos=True)
 
-        for text, ppl in candidates.most_common(hyp_num):
-            print('{0} ||| {1} ||| KenLM={2}'.format(i, text, -ppl))
+        for x, y in permutations(targets, 2):
+            xy_targets = merge_subseq([x.split(), y.split()])
 
+            G = nx.DiGraph()
+            for tokens in xy_targets:
+                G = add_edges(G, handle_tokens(tokens))
+
+            for p in sorted(nx.all_simple_paths(G, ('<s>', 0), ('</s>', 0))):
+                target_tokens = [t[0] for t in p[1:-1]]
+                text = ' '.join(target_tokens)
+                score = model.score(text, bos=True, eos=True)
+                ppl = -model.perplexity(text)
+                candidates[text] = score * len(text.split()) / ppl
+
+
+        for text, score in candidates.most_common(hyp_num):
+            print('{0} ||| {1} ||| KenLM={2}'.format(i, text, score))
 
 if __name__ == '__main__':
     fire.Fire(main)
