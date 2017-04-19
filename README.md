@@ -5,8 +5,8 @@ Expand, combine, evaluate multiple machine translation systems output
 
 ### Build word representations
 
-    fasttext supervised -dim 600 -minn 1 -maxn 6 -input corpus.tok.src -output model.src
-    fasttext supervised -dim 600 -minn 1 -maxn 6 -input corpus.tok.tgt -output model.tgt
+    fasttext skipgram -dim 600 -minn 1 -maxn 6 -input corpus.tok.src -output model.src
+    fasttext skipgram -dim 600 -minn 1 -maxn 6 -input corpus.tok.tgt -output model.tgt
 
 The models can be built from monolingual corpuses.
 
